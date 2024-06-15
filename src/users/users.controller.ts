@@ -1,21 +1,30 @@
-import { Controller, Get, Post, Body, Put, Delete, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Delete, Param, NotFoundException, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from 'src/entities/user';
+import { User } from './entities/user';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  findAll(): Promise<User[]> {
-    return this.usersService.findAll();
+  async findAll(): Promise<User[]> {
+    return await this.usersService.findAll();
+  }
+
+  @Get(':id')
+  async findById(@Param('id') id: number): Promise<User> {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    return user;
   }
 
   @Post()
-  async create(@Body() userData: User): Promise<User> {
-    // Puedes realizar cualquier lógica de validación adicional aquí si es necesario
-    return this.usersService.create(userData);
+  async create(@Body() userData: Partial<User>): Promise<User> {
+    return await this.usersService.create(userData);
   }
+
   @Put(':id')
   async update(@Param('id') id: number, @Body() userData: User): Promise<User> {
     const user = await this.usersService.update(id, userData);
@@ -26,8 +35,8 @@ export class UsersController {
   }
 
   @Delete(':id')
-    async delete(@Param('id') id: number): Promise<{ success: boolean }> {
-        const success = await this.usersService.delete(id);
-        return { success }; // Devuelve un objeto indicando si la eliminación fue exitosa
-    }
+  async delete(@Param('id') id: number): Promise<{ success: boolean }> {
+    const success = await this.usersService.delete(id);
+    return { success };
   }
+}

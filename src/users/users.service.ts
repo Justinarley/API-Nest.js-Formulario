@@ -1,7 +1,8 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from 'src/entities/user';
+import { User } from './entities/user';
+
 
 @Injectable()
 export class UsersService {
@@ -24,6 +25,16 @@ export class UsersService {
         return await this.userRepository.find();
     }
 
+    async findById(id: number): Promise<User | null> {
+        const user = await this.userRepository.findOne({ where: { id } });
+        if (!user) {
+            throw new Error(`No existe el id o ya lo elimino ${id} not found`);
+        }
+    
+        return user;
+    }
+
+    
     async update(id: number, newData: Partial<User>): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
